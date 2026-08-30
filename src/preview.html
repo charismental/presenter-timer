@@ -106,43 +106,13 @@
         height: 196px;
         top: 36px;
         right: 36px;
-        display: flex;
-        flex-direction: column;
-      }
-      .drag-bar {
-        height: 26px;
-        margin: 0 8px;
-        border-radius: 10px 10px 0 0;
-        background: rgba(16, 13, 11, 0.72);
-        border: 1px solid rgba(243, 236, 227, 0.12);
-        border-bottom: 0;
-        color: #b7ab9c;
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: grab;
-        user-select: none;
       }
       #timer-layer iframe {
-        flex: 1;
         width: 100%;
+        height: 100%;
         border: 0;
         background: transparent;
         pointer-events: auto;
-      }
-      .resize {
-        position: absolute;
-        right: 10px;
-        bottom: 10px;
-        width: 16px;
-        height: 16px;
-        cursor: nwse-resize;
-        z-index: 6;
-        background: linear-gradient(135deg, transparent 55%, rgba(232, 192, 122, 0.85) 55%);
-        border-radius: 2px;
       }
       .banner {
         position: absolute;
@@ -185,7 +155,7 @@
         <ol>
           <li>In Electron, click-through is on by default so a USB clicker still changes slides.</li>
           <li>The overlay is not focusable, so Page Down / arrow keys never land here.</li>
-          <li>Hover the timer (when click-through is off) for start, presets, and ±1 minute.</li>
+          <li>Hover the timer for start, presets, and ±1. Drag the clock to move. Pull the gold corner to resize.</li>
         </ol>
       </aside>
     </div>
@@ -196,9 +166,7 @@
     </div>
     <div class="slide-count" id="count">Slide 1 of 3</div>
     <div id="timer-layer">
-      <div class="drag-bar" id="drag">Drag to move</div>
       <iframe src="overlay.html" title="Presenter timer overlay"></iframe>
-      <div class="resize" id="resize"></div>
     </div>
     <script>
       const slides = [
@@ -242,43 +210,68 @@
       });
 
       const layer = document.getElementById("timer-layer");
-      const dragBar = document.getElementById("drag");
-      let drag = null;
-      dragBar.addEventListener("pointerdown", (event) => {
-        drag = {
-          mx: event.clientX,
-          my: event.clientY,
-          x: layer.offsetLeft,
-          y: layer.offsetTop
-        };
-        dragBar.setPointerCapture(event.pointerId);
-      });
-      dragBar.addEventListener("pointermove", (event) => {
-        if (!drag) return;
-        layer.style.left = drag.x + (event.clientX - drag.mx) + "px";
-        layer.style.top = drag.y + (event.clientY - drag.my) + "px";
-        layer.style.right = "auto";
-      });
-      dragBar.addEventListener("pointerup", () => { drag = null; });
+      const MIN_W = 180;
+      const MIN_H = 88;
+      let interact = null;
 
-      const resize = document.getElementById("resize");
-      let rs = null;
-      resize.addEventListener("pointerdown", (event) => {
-        event.stopPropagation();
-        rs = {
-          mx: event.clientX,
-          my: event.clientY,
-          w: layer.offsetWidth,
-          h: layer.offsetHeight
-        };
-        resize.setPointerCapture(event.pointerId);
+      function clampResize(edge, start, dx, dy) {
+        let left = start.left;
+        let top = start.top;
+        let width = start.width;
+        let height = start.height;
+        if (edge.indexOf("e") !== -1) width = start.width + dx;
+        if (edge.indexOf("s") !== -1) height = start.height + dy;
+        if (edge.indexOf("w") !== -1) {
+          width = start.width - dx;
+          left = start.left + dx;
+        }
+        if (edge.indexOf("n") !== -1) {
+          height = start.height - dy;
+          top = start.top + dy;
+        }
+        if (width < MIN_W) {
+          if (edge.indexOf("w") !== -1) left = start.left + start.width - MIN_W;
+          width = MIN_W;
+        }
+        if (height < MIN_H) {
+          if (edge.indexOf("n") !== -1) top = start.top + start.height - MIN_H;
+          height = MIN_H;
+        }
+        return { left: left, top: top, width: width, height: height };
+      }
+
+      window.addEventListener("message", (event) => {
+        const msg = event.data;
+        if (!msg || msg.type !== "presenter-overlay") return;
+        if (msg.kind === "start") {
+          interact = {
+            mode: msg.mode,
+            edge: msg.edge,
+            left: layer.offsetLeft,
+            top: layer.offsetTop,
+            width: layer.offsetWidth,
+            height: layer.offsetHeight
+          };
+          return;
+        }
+        if (msg.kind === "end") {
+          interact = null;
+          return;
+        }
+        if (msg.kind !== "move" || !interact) return;
+        if (interact.mode === "drag") {
+          layer.style.left = interact.left + msg.dx + "px";
+          layer.style.top = interact.top + msg.dy + "px";
+          layer.style.right = "auto";
+          return;
+        }
+        const next = clampResize(interact.edge, interact, msg.dx, msg.dy);
+        layer.style.left = next.left + "px";
+        layer.style.top = next.top + "px";
+        layer.style.right = "auto";
+        layer.style.width = next.width + "px";
+        layer.style.height = next.height + "px";
       });
-      resize.addEventListener("pointermove", (event) => {
-        if (!rs) return;
-        layer.style.width = Math.max(180, rs.w + (event.clientX - rs.mx)) + "px";
-        layer.style.height = Math.max(88, rs.h + (event.clientY - rs.my)) + "px";
-      });
-      resize.addEventListener("pointerup", () => { rs = null; });
     </script>
   </body>
 </html>
