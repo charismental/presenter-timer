@@ -64,7 +64,9 @@
   function paint() {
     const snap = TimerCore.snapshot(state);
     if (state.mode === "clock") {
-      const parts = TimerCore.formatClockParts();
+      const parts = TimerCore.formatClockParts
+        ? TimerCore.formatClockParts()
+        : { time: snap.display.replace(/ (AM|PM)$/, ""), ampm: /PM$/.test(snap.display) ? "PM" : "AM" };
       digits.textContent = parts.time;
       ampm.hidden = false;
       ampm.textContent = parts.ampm;
@@ -81,7 +83,6 @@
     } else {
       secondary.hidden = true;
     }
-    requestAnimationFrame(paint);
   }
 
   toggleBtn.addEventListener("click", function () {
@@ -104,10 +105,12 @@
     api.getState().then(function (next) {
       state = next;
       renderChrome();
+      paint();
     });
     api.onState(function (next) {
       state = next;
       renderChrome();
+      paint();
     });
   } else {
     controlsBtn.hidden = true;
@@ -115,4 +118,5 @@
   }
 
   paint();
+  setInterval(paint, 100);
 })();
