@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Presenter Timer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@500;700&family=Figtree:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="overlay.css" />
+  </head>
+  <body>
+    <div id="widget" class="widget theme-stage" data-click-through="true">
+      <div class="chrome" id="chrome">
+        <div class="presets" id="presets"></div>
+        <div class="transport">
+          <button type="button" id="btn-toggle" class="primary">Start</button>
+          <button type="button" id="btn-reset">Reset</button>
+          <button type="button" id="btn-minus" title="Minus one minute">−1</button>
+          <button type="button" id="btn-plus" title="Plus one minute">+1</button>
+          <button type="button" id="btn-controls" title="Open controls">⚙</button>
+        </div>
+      </div>
+      <div class="display" id="display">
+        <div class="meta">
+          <span class="label" id="label">COUNTDOWN</span>
+          <span class="hint" id="hint">Click-through on</span>
+        </div>
+        <div class="digits" id="digits">20:00</div>
+        <div class="secondary" id="secondary" hidden></div>
+        <div class="progress" id="progress" hidden>
+          <div class="bar" id="bar"></div>
+        </div>
+      </div>
+    </div>
+    <script src="timer-core.js"></script>
+    <script src="overlay.js"></script>
+  </body>
+</html>
