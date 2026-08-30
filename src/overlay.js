@@ -3,8 +3,7 @@
   const isElectron = !!(api && api.isElectron);
   const widget = document.getElementById("widget");
   const digits = document.getElementById("digits");
-  const label = document.getElementById("label");
-  const hint = document.getElementById("hint");
+  const ampm = document.getElementById("ampm");
   const secondary = document.getElementById("secondary");
   const progress = document.getElementById("progress");
   const bar = document.getElementById("bar");
@@ -42,9 +41,6 @@
     widget.dataset.clickThrough = state.clickThrough ? "true" : "false";
     widget.style.setProperty("--bg", overlayBg());
     toggleBtn.textContent = state.running ? "Pause" : "Start";
-    hint.textContent = state.clickThrough
-      ? "Click-through on"
-      : "Drag to move · hover for controls";
     presetsEl.innerHTML = "";
     (state.presetsMin || []).forEach(function (min) {
       const btn = document.createElement("button");
@@ -67,8 +63,15 @@
 
   function paint() {
     const snap = TimerCore.snapshot(state);
-    digits.textContent = snap.display;
-    label.textContent = snap.label;
+    if (state.mode === "clock") {
+      const parts = TimerCore.formatClockParts();
+      digits.textContent = parts.time;
+      ampm.hidden = false;
+      ampm.textContent = parts.ampm;
+    } else {
+      digits.textContent = snap.display;
+      ampm.hidden = true;
+    }
     widget.classList.toggle("overtime", !!(snap.overtime && state.overtimeFlash));
     progress.hidden = !(state.showProgress && state.mode === "countdown");
     bar.style.width = Math.round(snap.progress * 100) + "%";
