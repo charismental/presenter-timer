@@ -252,6 +252,24 @@ ipcMain.on("set-ignore-mouse", (_event, ignore) => {
   overlayWindow.setIgnoreMouseEvents(!!ignore, ignore ? { forward: true } : {});
 });
 
+ipcMain.handle("overlay-get-bounds", () => {
+  if (!overlayWindow || overlayWindow.isDestroyed()) return null;
+  return overlayWindow.getBounds();
+});
+
+ipcMain.on("overlay-set-bounds", (_event, bounds) => {
+  if (!overlayWindow || overlayWindow.isDestroyed() || !bounds) return;
+  overlayWindow.setBounds(
+    {
+      x: Math.round(bounds.x),
+      y: Math.round(bounds.y),
+      width: Math.max(180, Math.round(bounds.width)),
+      height: Math.max(88, Math.round(bounds.height)),
+    },
+    false
+  );
+});
+
 ipcMain.on("open-controls", () => createControls());
 ipcMain.on("hide-overlay", () => {
   if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.hide();
