@@ -13,13 +13,13 @@ The overlay stays **always on top**, including over fullscreen slides.
 ## Features
 
 - Countdown, stopwatch, and wall clock
-- Drag to move, native resize from the window edges
+- Drag the clock to move; drag the gold corner (or any edge) to resize
 - Duration presets (5 / 10 / 15 / 20 / 30 / 45 minutes) plus a custom H:M:S setter
 - ±1 minute while a talk is running
 - Gentle overtime flash (slow red pulse, not a strobe)
 - Optional progress bar and secondary clock
 - Stage, light, and high-contrast looks
-- Hover chrome on the overlay when click-through is off
+- Hover chrome on the overlay when click-through is off (start, presets, ±1)
 
 ## Download (Windows)
 
@@ -61,7 +61,8 @@ Then open `http://127.0.0.1:45331`.
 2. Leave **Click-through** enabled.
 3. Start the countdown from the control window or tray.
 4. Advance slides with the clicker as usual.
-5. If you go long, the digits pulse warm red until you reset.
+5. To move or resize the overlay, turn **Click-through** off, drag the clock, and pull the gold corner. Turn click-through back on before you present.
+6. If you go long, the digits pulse warm red until you reset.
 
 ## Repo
 
