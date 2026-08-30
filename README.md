@@ -19,7 +19,7 @@ The overlay stays **always on top**, including over fullscreen slides.
 - Gentle overtime flash (slow red pulse, not a strobe)
 - Optional progress bar and secondary clock
 - Stage, light, and high-contrast looks
-- Hover chrome on the overlay when click-through is off (start, presets, ±1)
+- Hover the top of the overlay (click-through off) for Start/Pause; × hides it again
 
 ## Download (Windows)
 
