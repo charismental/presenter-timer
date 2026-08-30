@@ -14,4 +14,6 @@ contextBridge.exposeInMainWorld("presenter", {
   },
   openControls: () => ipcRenderer.send("open-controls"),
   hideOverlay: () => ipcRenderer.send("hide-overlay"),
+  getBounds: () => ipcRenderer.invoke("overlay-get-bounds"),
+  setBounds: (bounds) => ipcRenderer.send("overlay-set-bounds", bounds),
 });

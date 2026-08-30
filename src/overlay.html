@@ -18,17 +18,18 @@
   </head>
   <body>
     <div id="widget" class="widget theme-stage" data-click-through="true">
-      <div class="chrome" id="chrome">
-        <div class="presets" id="presets"></div>
-        <div class="transport">
-          <button type="button" id="btn-toggle" class="primary">Start</button>
-          <button type="button" id="btn-reset">Reset</button>
-          <button type="button" id="btn-minus" title="Minus one minute">−1</button>
-          <button type="button" id="btn-plus" title="Plus one minute">+1</button>
-          <button type="button" id="btn-controls" title="Open controls">⚙</button>
-        </div>
-      </div>
       <div class="display" id="display">
+        <div class="chrome" id="chrome">
+          <div class="presets" id="presets"></div>
+          <div class="transport">
+            <button type="button" id="btn-toggle" class="primary">Start</button>
+            <button type="button" id="btn-reset">Reset</button>
+            <button type="button" id="btn-minus" title="Minus one minute">−1</button>
+            <button type="button" id="btn-plus" title="Plus one minute">+1</button>
+            <button type="button" id="btn-controls" title="Open controls">⚙</button>
+          </div>
+          <p class="hint">Drag the clock to move · gold corner to resize</p>
+        </div>
         <div class="time-row">
           <div class="digits" id="digits">20:00</div>
           <div class="ampm" id="ampm" hidden></div>
@@ -37,6 +38,14 @@
         <div class="progress" id="progress" hidden>
           <div class="bar" id="bar"></div>
         </div>
+        <div class="grip n" data-resize="n" title="Drag to resize"></div>
+        <div class="grip s" data-resize="s" title="Drag to resize"></div>
+        <div class="grip e" data-resize="e" title="Drag to resize"></div>
+        <div class="grip w" data-resize="w" title="Drag to resize"></div>
+        <div class="grip ne" data-resize="ne" title="Drag to resize"></div>
+        <div class="grip nw" data-resize="nw" title="Drag to resize"></div>
+        <div class="grip sw" data-resize="sw" title="Drag to resize"></div>
+        <div class="grip se" data-resize="se" title="Drag the gold corner to resize"></div>
       </div>
     </div>
     <script src="timer-core.js"></script>
