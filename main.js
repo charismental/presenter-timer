@@ -15,6 +15,8 @@ let overlayWindow = null;
 let controlsWindow = null;
 let tray = null;
 let state = TimerCore.createState();
+let isQuitting = false;
+let lastOverlayBounds = null;
 
 const STATE_FILE = () => path.join(app.getPath("userData"), "presenter-state.json");
 
@@ -73,18 +75,42 @@ function trayIcon() {
   return nativeImage.createFromPath(iconPath);
 }
 
+function rememberOverlayBounds() {
+  if (!overlayWindow || overlayWindow.isDestroyed()) return;
+  lastOverlayBounds = overlayWindow.getBounds();
+}
+
+function showOverlay() {
+  if (!overlayWindow || overlayWindow.isDestroyed()) {
+    createOverlay();
+    return;
+  }
+  applyAlwaysOnTop();
+  applyClickThrough();
+  overlayWindow.showInactive();
+  overlayWindow.moveTop();
+  overlayWindow.webContents.send("state", Object.assign({}, state));
+}
+
 function createOverlay() {
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    showOverlay();
+    return;
+  }
+
   const display = screen.getPrimaryDisplay();
   const work = display.workArea;
-  const width = 360;
-  const height = 200;
+  const width = lastOverlayBounds ? lastOverlayBounds.width : 360;
+  const height = lastOverlayBounds ? lastOverlayBounds.height : 200;
+  const x = lastOverlayBounds ? lastOverlayBounds.x : work.x + work.width - width - 28;
+  const y = lastOverlayBounds ? lastOverlayBounds.y : work.y + 28;
 
   overlayWindow = new BrowserWindow({
     width,
     height,
     icon: path.join(__dirname, "assets", "icon.png"),
-    x: work.x + work.width - width - 28,
-    y: work.y + 28,
+    x,
+    y,
     minWidth: 180,
     minHeight: 88,
     frame: false,
@@ -115,10 +141,18 @@ function createOverlay() {
     applyAlwaysOnTop();
     applyClickThrough();
     overlayWindow.showInactive();
+    overlayWindow.webContents.send("state", Object.assign({}, state));
+  });
+  overlayWindow.on("moved", rememberOverlayBounds);
+  overlayWindow.on("resized", rememberOverlayBounds);
+  overlayWindow.on("close", (event) => {
+    if (isQuitting) return;
+    event.preventDefault();
+    rememberOverlayBounds();
+    overlayWindow.hide();
   });
   overlayWindow.on("closed", () => {
     overlayWindow = null;
-    if (!controlsWindow) app.quit();
   });
 }
 
@@ -207,7 +241,7 @@ function updateTrayMenu() {
       },
     },
     { type: "separator" },
-    { label: "Show overlay", click: () => overlayWindow && overlayWindow.showInactive() },
+    { label: "Show overlay", click: () => showOverlay() },
     { label: "Open controls", click: () => createControls() },
     { type: "separator" },
     { label: "Quit", click: () => app.quit() },
@@ -268,11 +302,15 @@ ipcMain.on("overlay-set-bounds", (_event, bounds) => {
     },
     false
   );
+  rememberOverlayBounds();
 });
 
 ipcMain.on("open-controls", () => createControls());
 ipcMain.on("hide-overlay", () => {
-  if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.hide();
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    rememberOverlayBounds();
+    overlayWindow.hide();
+  }
 });
 
 app.whenReady().then(() => {
@@ -281,7 +319,7 @@ app.whenReady().then(() => {
   createControls();
   createTray();
   app.on("activate", () => {
-    if (!overlayWindow) createOverlay();
+    showOverlay();
     createControls();
   });
 });
@@ -290,4 +328,8 @@ app.on("window-all-closed", () => {
   app.quit();
 });
 
-app.on("before-quit", saveState);
+app.on("before-quit", () => {
+  isQuitting = true;
+  rememberOverlayBounds();
+  saveState();
+});
