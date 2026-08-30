@@ -52,7 +52,7 @@
     return (negative ? "+" : "") + body;
   }
 
-  function formatClock(now) {
+  function formatClockParts(now) {
     now = now || new Date();
     const d = now instanceof Date ? now : new Date(now);
     let h = d.getHours();
@@ -60,7 +60,12 @@
     const s = pad(d.getSeconds());
     const ampm = h >= 12 ? "PM" : "AM";
     h = h % 12 || 12;
-    return h + ":" + m + ":" + s + " " + ampm;
+    return { time: h + ":" + m + ":" + s, ampm: ampm };
+  }
+
+  function formatClock(now) {
+    const parts = formatClockParts(now);
+    return parts.time + " " + parts.ampm;
   }
 
   function snapshot(state, now) {
@@ -165,6 +170,7 @@
     nowElapsed: nowElapsed,
     formatDuration: formatDuration,
     formatClock: formatClock,
+    formatClockParts: formatClockParts,
     snapshot: snapshot,
     apply: apply,
   };
