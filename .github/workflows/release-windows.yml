@@ -1,0 +1,41 @@
+name: Release Windows exe
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install
+        run: npm install
+      - name: Build portable exe
+        run: npm run dist:win
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PresenterTimer-windows
+          path: dist/*.exe
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: Presenter Timer 1.0.0
+          body: |
+            Portable Windows build — download **PresenterTimer-1.0.0-win.exe** and run it. No installer.
+
+            If SmartScreen warns, choose **More info → Run anyway**. The build is unsigned.
+
+            Click-through is on by default so a USB clicker still advances your slides. Use the control window or tray to start the countdown.
+          files: dist/*.exe
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
