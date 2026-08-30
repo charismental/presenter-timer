@@ -2,6 +2,7 @@
   const api = window.presenter;
   const isElectron = !!(api && api.isElectron);
   const widget = document.getElementById("widget");
+  const display = document.getElementById("display");
   const digits = document.getElementById("digits");
   const ampm = document.getElementById("ampm");
   const secondary = document.getElementById("secondary");
@@ -14,8 +15,15 @@
   const plusBtn = document.getElementById("btn-plus");
   const controlsBtn = document.getElementById("btn-controls");
 
+  const MIN_W = 180;
+  const MIN_H = 88;
+
   let state = TimerCore.createState();
   if (!isElectron) state.clickThrough = false;
+
+  let lastBounds = null;
+  let interact = null;
+  let hideChromeTimer = null;
 
   function blurToSlides() {
     if (isElectron) return;
@@ -85,6 +93,136 @@
     }
   }
 
+  function canInteract() {
+    return !state.clickThrough;
+  }
+
+  function showChrome() {
+    clearTimeout(hideChromeTimer);
+    if (!canInteract()) return;
+    widget.classList.add("show-chrome");
+  }
+
+  function scheduleHideChrome() {
+    clearTimeout(hideChromeTimer);
+    hideChromeTimer = setTimeout(function () {
+      if (!interact) widget.classList.remove("show-chrome");
+    }, 280);
+  }
+
+  function postParent(kind, extra) {
+    try {
+      const payload = Object.assign({ type: "presenter-overlay", kind: kind }, extra || {});
+      window.parent.postMessage(payload, "*");
+    } catch (_err) {}
+  }
+
+  function prefetchBounds() {
+    if (isElectron && api.getBounds) {
+      api.getBounds().then(function (bounds) {
+        if (bounds) lastBounds = bounds;
+      });
+      return;
+    }
+    lastBounds = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+  }
+
+  function clampSize(edge, start, dx, dy) {
+    let x = start.x;
+    let y = start.y;
+    let width = start.width;
+    let height = start.height;
+    if (edge.indexOf("e") !== -1) width = start.width + dx;
+    if (edge.indexOf("s") !== -1) height = start.height + dy;
+    if (edge.indexOf("w") !== -1) {
+      width = start.width - dx;
+      x = start.x + dx;
+    }
+    if (edge.indexOf("n") !== -1) {
+      height = start.height - dy;
+      y = start.y + dy;
+    }
+    if (width < MIN_W) {
+      if (edge.indexOf("w") !== -1) x = start.x + start.width - MIN_W;
+      width = MIN_W;
+    }
+    if (height < MIN_H) {
+      if (edge.indexOf("n") !== -1) y = start.y + start.height - MIN_H;
+      height = MIN_H;
+    }
+    return { x: x, y: y, width: width, height: height };
+  }
+
+  function beginInteract(mode, event, edge) {
+    event.preventDefault();
+    event.stopPropagation();
+    showChrome();
+    widget.classList.add("interacting");
+    try {
+      display.setPointerCapture(event.pointerId);
+    } catch (_err) {}
+    interact = {
+      mode: mode,
+      edge: edge,
+      startX: event.screenX,
+      startY: event.screenY,
+      start: lastBounds,
+      pointerId: event.pointerId,
+    };
+    postParent("start", { mode: mode, edge: edge });
+    const ready =
+      isElectron && api.getBounds
+        ? api.getBounds()
+        : Promise.resolve({ x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
+    ready.then(function (bounds) {
+      if (!interact || interact.pointerId !== event.pointerId) return;
+      if (bounds) {
+        lastBounds = bounds;
+        interact.start = bounds;
+      }
+    });
+  }
+
+  function onPointerMove(event) {
+    if (!interact || !interact.start) return;
+    const dx = event.screenX - interact.startX;
+    const dy = event.screenY - interact.startY;
+    if (interact.mode === "drag") {
+      if (isElectron && api.setBounds) {
+        const next = {
+          x: interact.start.x + dx,
+          y: interact.start.y + dy,
+          width: interact.start.width,
+          height: interact.start.height,
+        };
+        lastBounds = next;
+        api.setBounds(next);
+      } else {
+        postParent("move", { mode: "drag", dx: dx, dy: dy });
+      }
+      return;
+    }
+    if (isElectron && api.setBounds) {
+      const next = clampSize(interact.edge, interact.start, dx, dy);
+      lastBounds = next;
+      api.setBounds(next);
+    } else {
+      postParent("move", { mode: "resize", edge: interact.edge, dx: dx, dy: dy });
+    }
+  }
+
+  function endInteract(event) {
+    if (!interact) return;
+    if (event && event.pointerId !== interact.pointerId) return;
+    interact = null;
+    widget.classList.remove("interacting");
+    postParent("end", {});
+    try {
+      if (event) display.releasePointerCapture(event.pointerId);
+    } catch (_err) {}
+    if (!display.matches(":hover")) scheduleHideChrome();
+  }
+
   toggleBtn.addEventListener("click", function () {
     send({ type: "toggle" });
   });
@@ -99,6 +237,35 @@
   });
   controlsBtn.addEventListener("click", function () {
     if (isElectron) api.openControls();
+  });
+
+  display.addEventListener("mouseenter", function () {
+    showChrome();
+    prefetchBounds();
+  });
+  display.addEventListener("mouseleave", function () {
+    if (interact) return;
+    scheduleHideChrome();
+  });
+
+  display.addEventListener("pointerdown", function (event) {
+    if (event.button !== 0 || !canInteract()) return;
+    const grip = event.target.closest("[data-resize]");
+    if (grip) {
+      beginInteract("resize", event, grip.getAttribute("data-resize"));
+      return;
+    }
+    if (event.target.closest("button") || event.target.closest(".chrome")) return;
+    beginInteract("drag", event, null);
+  });
+  display.addEventListener("pointermove", onPointerMove);
+  display.addEventListener("pointerup", endInteract);
+  display.addEventListener("pointercancel", endInteract);
+  window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("pointerup", endInteract);
+  window.addEventListener("blur", function () {
+    interact = null;
+    widget.classList.remove("interacting");
   });
 
   if (isElectron) {
