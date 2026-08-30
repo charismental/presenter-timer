@@ -8,12 +8,14 @@
   const secondary = document.getElementById("secondary");
   const progress = document.getElementById("progress");
   const bar = document.getElementById("bar");
-  const presetsEl = document.getElementById("presets");
   const toggleBtn = document.getElementById("btn-toggle");
   const resetBtn = document.getElementById("btn-reset");
   const minusBtn = document.getElementById("btn-minus");
   const plusBtn = document.getElementById("btn-plus");
   const controlsBtn = document.getElementById("btn-controls");
+  const hideBtn = document.getElementById("btn-hide");
+  const chromeEl = document.getElementById("chrome");
+  const hotspot = document.getElementById("chrome-hotspot");
 
   const MIN_W = 180;
   const MIN_H = 88;
@@ -24,6 +26,7 @@
   let lastBounds = null;
   let interact = null;
   let hideChromeTimer = null;
+  let chromeLocked = false;
 
   function blurToSlides() {
     if (isElectron) return;
@@ -49,17 +52,7 @@
     widget.dataset.clickThrough = state.clickThrough ? "true" : "false";
     widget.style.setProperty("--bg", overlayBg());
     toggleBtn.textContent = state.running ? "Pause" : "Start";
-    presetsEl.innerHTML = "";
-    (state.presetsMin || []).forEach(function (min) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = min + "m";
-      btn.addEventListener("click", function (event) {
-        event.stopPropagation();
-        send({ type: "set-preset", min: min });
-      });
-      presetsEl.appendChild(btn);
-    });
+    if (state.clickThrough) hideChrome(false);
   }
 
   function overlayBg() {
@@ -97,17 +90,23 @@
     return !state.clickThrough;
   }
 
-  function showChrome() {
+  function requestShowChrome() {
     clearTimeout(hideChromeTimer);
-    if (!canInteract()) return;
+    if (!canInteract() || chromeLocked) return;
     widget.classList.add("show-chrome");
+  }
+
+  function hideChrome(lock) {
+    clearTimeout(hideChromeTimer);
+    widget.classList.remove("show-chrome");
+    chromeLocked = !!lock;
   }
 
   function scheduleHideChrome() {
     clearTimeout(hideChromeTimer);
     hideChromeTimer = setTimeout(function () {
       if (!interact) widget.classList.remove("show-chrome");
-    }, 280);
+    }, 220);
   }
 
   function postParent(kind, extra) {
@@ -156,7 +155,6 @@
   function beginInteract(mode, event, edge) {
     event.preventDefault();
     event.stopPropagation();
-    showChrome();
     widget.classList.add("interacting");
     try {
       display.setPointerCapture(event.pointerId);
@@ -238,14 +236,41 @@
   controlsBtn.addEventListener("click", function () {
     if (isElectron) api.openControls();
   });
+  hideBtn.addEventListener("click", function (event) {
+    event.stopPropagation();
+    hideChrome(true);
+  });
+
+  function chromeZoneContains(node) {
+    return !!(node && (chromeEl.contains(node) || hotspot.contains(node)));
+  }
+
+  hotspot.addEventListener("mouseenter", function () {
+    requestShowChrome();
+  });
+  chromeEl.addEventListener("mouseenter", function () {
+    requestShowChrome();
+  });
+  hotspot.addEventListener("mouseleave", function (event) {
+    if (chromeZoneContains(event.relatedTarget)) return;
+    scheduleHideChrome();
+  });
+  chromeEl.addEventListener("mouseleave", function (event) {
+    if (chromeZoneContains(event.relatedTarget)) return;
+    scheduleHideChrome();
+  });
 
   display.addEventListener("mouseenter", function () {
-    showChrome();
     prefetchBounds();
   });
   display.addEventListener("mouseleave", function () {
+    chromeLocked = false;
     if (interact) return;
     scheduleHideChrome();
+  });
+
+  window.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") hideChrome(true);
   });
 
   display.addEventListener("pointerdown", function (event) {
