@@ -1,0 +1,204 @@
+:root {
+  --bg: #14110f;
+  --panel: #1c1814;
+  --ink: #f3ece3;
+  --muted: #b7ab9c;
+  --gold: #e8c07a;
+  --line: rgba(243, 236, 227, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Figtree, "Segoe UI", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.panel {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+}
+
+.lede {
+  margin: 0 0 22px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+section {
+  margin-bottom: 22px;
+}
+
+.preview-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+}
+
+.live-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.live-digits {
+  font-family: "Chivo Mono", ui-monospace, monospace;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+}
+
+.live-status {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.preview-card.overtime .live-digits,
+.preview-card.overtime .live-label {
+  color: #ff7a68;
+  animation: overtimePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes overtimePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.row.tight {
+  margin-top: 8px;
+}
+
+.grow {
+  flex: 1;
+}
+
+button {
+  font: 600 14px/1 Figtree, sans-serif;
+  color: var(--ink);
+  background: rgba(243, 236, 227, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+button:hover,
+button.active {
+  border-color: var(--gold);
+}
+
+button.primary {
+  background: var(--gold);
+  color: #1a140c;
+  border-color: transparent;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.duration {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+input[type="number"] {
+  width: 100%;
+  background: #0f0d0b;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  font: 600 16px "Chivo Mono", ui-monospace, monospace;
+}
+
+.check {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.check small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.check input {
+  margin-top: 3px;
+}
+
+.slider input {
+  width: 100%;
+  accent-color: var(--gold);
+}

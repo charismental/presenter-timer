@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Presenter Timer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@500;700&family=Figtree:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="controls.css" />
+  </head>
+  <body>
+    <main class="panel">
+      <header>
+        <p class="eyebrow">On stage</p>
+        <h1>Presenter Timer</h1>
+        <p class="lede">
+          Float a countdown over your slides. Click-through keeps the clicker
+          advancing the deck — this window never steals those keys.
+        </p>
+      </header>
+
+      <section class="preview-card">
+        <div class="live-label" id="live-label">COUNTDOWN</div>
+        <div class="live-digits" id="live-digits">20:00</div>
+        <div class="live-status" id="live-status">Ready</div>
+      </section>
+
+      <section>
+        <div class="segmented" role="tablist" aria-label="Mode">
+          <button type="button" data-mode="countdown" class="active">Countdown</button>
+          <button type="button" data-mode="stopwatch">Stopwatch</button>
+          <button type="button" data-mode="clock">Clock</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="row">
+          <button type="button" id="btn-toggle" class="primary grow">Start</button>
+          <button type="button" id="btn-reset">Reset</button>
+        </div>
+        <div class="row tight">
+          <button type="button" id="btn-minus">−1 min</button>
+          <button type="button" id="btn-plus">+1 min</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Duration</h2>
+        <div class="presets" id="presets"></div>
+        <div class="duration">
+          <label>
+            Hours
+            <input id="hours" type="number" min="0" max="23" value="0" />
+          </label>
+          <label>
+            Minutes
+            <input id="minutes" type="number" min="0" max="59" value="20" />
+          </label>
+          <label>
+            Seconds
+            <input id="seconds" type="number" min="0" max="59" value="0" />
+          </label>
+          <button type="button" id="btn-apply">Set</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Over slides</h2>
+        <label class="check">
+          <input id="click-through" type="checkbox" checked />
+          <span>
+            Click-through
+            <small>Mouse and clicker go to PowerPoint / Keynote / the browser</small>
+          </span>
+        </label>
+        <label class="check">
+          <input id="always-on-top" type="checkbox" checked />
+          <span>
+            Always on top
+            <small>Stay visible over fullscreen slides</small>
+          </span>
+        </label>
+        <label class="check">
+          <input id="overtime-flash" type="checkbox" checked />
+          <span>
+            Flash gently when overtime
+            <small>Soft red pulse after 0:00 — not a strobe</small>
+          </span>
+        </label>
+        <label class="check">
+          <input id="show-progress" type="checkbox" checked />
+          <span>Progress bar</span>
+        </label>
+        <label class="check">
+          <input id="show-clock" type="checkbox" />
+          <span>Show wall clock under the timer</span>
+        </label>
+      </section>
+
+      <section>
+        <h2>Look</h2>
+        <div class="segmented" id="themes">
+          <button type="button" data-theme="stage" class="active">Stage</button>
+          <button type="button" data-theme="light">Light</button>
+          <button type="button" data-theme="high">High contrast</button>
+        </div>
+        <label class="slider">
+          Overlay opacity
+          <input id="opacity" type="range" min="40" max="100" value="88" />
+        </label>
+      </section>
+    </main>
+    <script src="timer-core.js"></script>
+    <script src="controls.js"></script>
+  </body>
+</html>
