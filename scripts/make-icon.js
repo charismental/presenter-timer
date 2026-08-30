@@ -46,6 +46,6 @@ function writePng(file, size) {
 
 const dir = path.join(__dirname, "..", "assets");
 fs.mkdirSync(dir, { recursive: true });
-writePng(path.join(dir, "icon.png"), 64);
+writePng(path.join(dir, "icon.png"), 256);
 writePng(path.join(dir, "tray.png"), 32);
 console.log("Wrote assets/icon.png and assets/tray.png");
