@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Presenter Timer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@500;700&family=Figtree:wght@500;600;700&family=Fraunces:opsz,wght@9..144,560&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --stage: #0c0a09;
+        --paper: #f4efe6;
+        --gold: #e8c07a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        font-family: Figtree, "Segoe UI", sans-serif;
+        background: var(--stage);
+        color: var(--paper);
+        overflow: hidden;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        padding: 7vh 8vw;
+        gap: 4vw;
+        background:
+          radial-gradient(1200px 600px at 10% -10%, #2a2118 0%, transparent 55%),
+          linear-gradient(180deg, #161210, #0c0a09);
+      }
+      .kicker {
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--gold);
+        margin: 0 0 16px;
+      }
+      h1 {
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(40px, 6vw, 78px);
+        line-height: 0.95;
+        margin: 0 0 20px;
+        letter-spacing: -0.03em;
+      }
+      .copy {
+        max-width: 38ch;
+        color: #d4c7b6;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      .notes {
+        align-self: end;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 22px;
+      }
+      .notes h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+      .notes ol {
+        margin: 0;
+        padding-left: 18px;
+        color: #d4c7b6;
+        line-height: 1.55;
+      }
+      .demo-nav {
+        position: absolute;
+        left: 8vw;
+        bottom: 5vh;
+        display: flex;
+        gap: 8px;
+        z-index: 1;
+      }
+      .demo-nav button {
+        background: rgba(243,236,227,0.08);
+        color: var(--paper);
+        border: 1px solid rgba(243,236,227,0.14);
+        border-radius: 999px;
+        padding: 10px 16px;
+        font: 600 14px Figtree, sans-serif;
+        cursor: pointer;
+      }
+      .slide-count {
+        position: absolute;
+        right: 8vw;
+        bottom: 5.4vh;
+        color: #8f8476;
+        font-size: 13px;
+      }
+      #timer-layer {
+        position: absolute;
+        z-index: 5;
+        width: 360px;
+        height: 196px;
+        top: 36px;
+        right: 36px;
+        display: flex;
+        flex-direction: column;
+      }
+      .drag-bar {
+        height: 26px;
+        margin: 0 8px;
+        border-radius: 10px 10px 0 0;
+        background: rgba(16, 13, 11, 0.72);
+        border: 1px solid rgba(243, 236, 227, 0.12);
+        border-bottom: 0;
+        color: #b7ab9c;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        user-select: none;
+      }
+      #timer-layer iframe {
+        flex: 1;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        pointer-events: auto;
+      }
+      .resize {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        width: 16px;
+        height: 16px;
+        cursor: nwse-resize;
+        z-index: 6;
+        background: linear-gradient(135deg, transparent 55%, rgba(232, 192, 122, 0.85) 55%);
+        border-radius: 2px;
+      }
+      .banner {
+        position: absolute;
+        left: 8vw;
+        top: 22px;
+        z-index: 4;
+        font-size: 13px;
+        color: #cbbdaa;
+        background: rgba(12,10,9,0.55);
+        border: 1px solid rgba(232,192,122,0.25);
+        border-radius: 999px;
+        padding: 8px 14px;
+      }
+      @media (max-width: 800px) {
+        .slide {
+          grid-template-columns: 1fr;
+          padding: 88px 6vw 18vh;
+        }
+        #timer-layer {
+          width: min(360px, calc(100vw - 32px));
+          right: 16px;
+          top: 56px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slide" id="slide">
+      <div>
+        <p class="kicker">Q3 all-hands · 20 minutes</p>
+        <h1>What we ship next</h1>
+        <p class="copy">
+          This is a stand-in slide so you can try the overlay. Drag the timer.
+          Pull the corner to resize. Start a countdown and let it run past zero
+          to see the overtime pulse.
+        </p>
+      </div>
+      <aside class="notes">
+        <h2>How this stays out of the way</h2>
+        <ol>
+          <li>In Electron, click-through is on by default so a USB clicker still changes slides.</li>
+          <li>The overlay is not focusable, so Page Down / arrow keys never land here.</li>
+          <li>Hover the timer (when click-through is off) for start, presets, and ±1 minute.</li>
+        </ol>
+      </aside>
+    </div>
+    <div class="banner">Browser preview · for presenting, run the Electron app</div>
+    <div class="demo-nav">
+      <button type="button" id="prev">Previous</button>
+      <button type="button" id="next">Next</button>
+    </div>
+    <div class="slide-count" id="count">Slide 1 of 3</div>
+    <div id="timer-layer">
+      <div class="drag-bar" id="drag">Drag to move</div>
+      <iframe src="overlay.html" title="Presenter timer overlay"></iframe>
+      <div class="resize" id="resize"></div>
+    </div>
+    <script>
+      const slides = [
+        {
+          kicker: "Q3 all-hands · 20 minutes",
+          title: "What we ship next",
+          copy: "This is a stand-in slide so you can try the overlay. Drag the timer. Pull the corner to resize. Start a countdown and let it run past zero to see the overtime pulse."
+        },
+        {
+          kicker: "Roadmap",
+          title: "Three bets, not thirty",
+          copy: "Click Next as if you were presenting. The timer should stay put. In the desktop app, those same keys go to the slideshow because the overlay never takes focus."
+        },
+        {
+          kicker: "Close",
+          title: "Leave with one number",
+          copy: "Set a duration, start the countdown, and keep talking. If you run long, the digits flush warm red and pulse slowly until you reset."
+        }
+      ];
+      let index = 0;
+      const slide = document.getElementById("slide");
+      function render() {
+        const s = slides[index];
+        slide.querySelector(".kicker").textContent = s.kicker;
+        slide.querySelector("h1").textContent = s.title;
+        slide.querySelector(".copy").textContent = s.copy;
+        document.getElementById("count").textContent = "Slide " + (index + 1) + " of " + slides.length;
+      }
+      function next() { index = (index + 1) % slides.length; render(); }
+      function prev() { index = (index + slides.length - 1) % slides.length; render(); }
+      document.getElementById("next").addEventListener("click", next);
+      document.getElementById("prev").addEventListener("click", prev);
+      window.addEventListener("keydown", (event) => {
+        if (["PageDown", "ArrowRight", "ArrowDown", " "].includes(event.key) || event.key === "Spacebar") {
+          event.preventDefault();
+          next();
+        } else if (["PageUp", "ArrowLeft", "ArrowUp"].includes(event.key)) {
+          event.preventDefault();
+          prev();
+        }
+      });
+
+      const layer = document.getElementById("timer-layer");
+      const dragBar = document.getElementById("drag");
+      let drag = null;
+      dragBar.addEventListener("pointerdown", (event) => {
+        drag = {
+          mx: event.clientX,
+          my: event.clientY,
+          x: layer.offsetLeft,
+          y: layer.offsetTop
+        };
+        dragBar.setPointerCapture(event.pointerId);
+      });
+      dragBar.addEventListener("pointermove", (event) => {
+        if (!drag) return;
+        layer.style.left = drag.x + (event.clientX - drag.mx) + "px";
+        layer.style.top = drag.y + (event.clientY - drag.my) + "px";
+        layer.style.right = "auto";
+      });
+      dragBar.addEventListener("pointerup", () => { drag = null; });
+
+      const resize = document.getElementById("resize");
+      let rs = null;
+      resize.addEventListener("pointerdown", (event) => {
+        event.stopPropagation();
+        rs = {
+          mx: event.clientX,
+          my: event.clientY,
+          w: layer.offsetWidth,
+          h: layer.offsetHeight
+        };
+        resize.setPointerCapture(event.pointerId);
+      });
+      resize.addEventListener("pointermove", (event) => {
+        if (!rs) return;
+        layer.style.width = Math.max(180, rs.w + (event.clientX - rs.mx)) + "px";
+        layer.style.height = Math.max(88, rs.h + (event.clientY - rs.my)) + "px";
+      });
+      resize.addEventListener("pointerup", () => { rs = null; });
+    </script>
+  </body>
+</html>
