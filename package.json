@@ -1,0 +1,22 @@
+{
+  "name": "presenter-timer",
+  "version": "1.0.0",
+  "description": "A floating presenter timer that stays on top of slides without stealing your clicker.",
+  "main": "main.js",
+  "author": "OrangeLazarus",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/charismental/presenter-timer.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "preview": "node scripts/preview-server.js",
+    "test": "node scripts/test-timer-core.js",
+    "icon": "node scripts/make-icon.js",
+    "postinstall": "node scripts/make-icon.js"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0"
+  }
+}
