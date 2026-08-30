@@ -14,9 +14,39 @@
     "preview": "node scripts/preview-server.js",
     "test": "node scripts/test-timer-core.js",
     "icon": "node scripts/make-icon.js",
-    "postinstall": "node scripts/make-icon.js"
+    "postinstall": "node scripts/make-icon.js",
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder --win portable --x64 --publish never"
+  },
+  "build": {
+    "appId": "com.orangelazarus.presentertimer",
+    "productName": "PresenterTimer",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "PresenterTimer-${version}-win.exe"
+    }
   },
   "devDependencies": {
-    "electron": "^38.0.0"
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12"
   }
 }
