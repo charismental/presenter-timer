@@ -21,7 +21,22 @@ The overlay stays **always on top**, including over fullscreen slides.
 - Stage, light, and high-contrast looks
 - Hover chrome on the overlay when click-through is off
 
-## Run it
+## Download (Windows)
+
+Grab the portable exe from [Releases](https://github.com/charismental/presenter-timer/releases): **PresenterTimer-1.0.0-win.exe**. Run it directly — no installer.
+
+If Windows SmartScreen warns, choose **More info → Run anyway** (the build is unsigned).
+
+To rebuild locally on Windows:
+
+```bash
+npm install
+npm run dist:win
+```
+
+The exe lands in `dist/PresenterTimer-1.0.0-win.exe`.
+
+## Run from source
 
 ```bash
 npm install
